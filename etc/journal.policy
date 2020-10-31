@@ -1,0 +1,10 @@
+grant codeBase "file:${user.dir}${/}dist${/}journal.jar"{
+    permission java.util.PropertyPermission "user.dir", "read,write";
+    permission java.io.FilePermission "${user.dir}${/}data${/}journal.data", "read";
+    permission java.io.FilePermission "${user.dir}${/}data${/}journal.data", "write";
+};
+
+grant codeBase "file:${user.dir}${/}dist${/}main.jar"{
+
+};
+
