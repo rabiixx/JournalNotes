@@ -44,9 +44,7 @@ public final class JournalNotes {
               break;
             }
             
-            Boolean res = addNote.add(note);
-              System.out.println("res main: " + res);
-            if ( res == true ) {
+            if ( addNote.add( note ) == true ) {
               System.out.println("Nota guardada");
             } else {
               System.err.println("Problema al guardar la nota");

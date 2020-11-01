@@ -1,7 +1,8 @@
 grant codeBase "file:${user.dir}${/}dist${/}journal.jar"{
     permission java.util.PropertyPermission "user.dir", "read,write";
-    permission java.io.FilePermission "${user.dir}${/}data${/}journal.data", "read";
-    permission java.io.FilePermission "${user.dir}${/}data${/}journal.data", "write";
+    permission java.io.FilePermission "${user.dir}${/}data${/}journal.data", "read,write";
+    permission java.lang.RuntimePermission "writeFileDescriptor";
+    permission java.lang.RuntimePermission "readFileDescriptor";
 };
 
 grant codeBase "file:${user.dir}${/}dist${/}main.jar"{

@@ -169,48 +169,49 @@ final class AESCipherGenerator {
   private Cipher getCipher (final int mode,
                             final char[] password,
                             final int iterations) throws GeneralSecurityException {
-    
     try {
       
-      // Generación de clave secreta a partir de contraseña
-      final PBEKeySpec keySpec = new PBEKeySpec(password);
-      final SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(PBE_BLOCK_CIPHER);
-      final SecretKey key = keyFactory.generateSecret(keySpec);
-      keySpec.clearPassword(); // Se borra el duplicado interno de la contraseña
-      
-      // Borrado de contraseña
-      Arrays.fill(password, (char) 0);      
+        // Generación de clave secreta a partir de contraseña
+        final PBEKeySpec keySpec = new PBEKeySpec(password);  
+        final SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(PBE_BLOCK_CIPHER);
+        final SecretKey key = keyFactory.generateSecret(keySpec);
+        keySpec.clearPassword(); // Se borra el duplicado interno de la contraseña
 
-      // Generación del vector de inicialización
-      final byte[] ivRawData = new byte[KEY_LENGTH];
-      rg.nextBytes(ivRawData);
-      final IvParameterSpec iv = new IvParameterSpec(ivRawData);
-      
-      // Parámetros de configuración del cifrador PBE
-      final byte[] salt = new byte[SALT_LENGTH];
-      rg.nextBytes(salt);
-      final PBEParameterSpec params = new PBEParameterSpec(salt, iterations, iv);
+        // Borrado de contraseña
+        Arrays.fill(password, (char) 0);      
 
-      // Instanciación del cifrador PBE
-      final Cipher cipher = Cipher.getInstance(pbeCipherTransform);
-      
-      // Configuración del cifrador PBE
-      cipher.init(mode, key, params);
+        // Generación del vector de inicialización
+        final byte[] ivRawData = new byte[KEY_LENGTH];
+        rg.nextBytes(ivRawData);
+        final IvParameterSpec iv = new IvParameterSpec(ivRawData);
 
-      return cipher;
+        // Parámetros de configuración del cifrador PBE
+        final byte[] salt = new byte[SALT_LENGTH];
+        rg.nextBytes(salt);
+        final PBEParameterSpec params = new PBEParameterSpec(salt, iterations, iv);
+
+        // Instanciación del cifrador PBE
+        final Cipher cipher = Cipher.getInstance(pbeCipherTransform);
+
+        // Configuración del cifrador PBE
+        cipher.init(mode, key, params);
+
+        return cipher;
 
     } catch (final NoSuchAlgorithmException | 
                    NoSuchPaddingException |
                    InvalidKeySpecException |
                    InvalidKeyException |
                    InvalidAlgorithmParameterException ex) {
-      LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
-      throw new GeneralSecurityException();
+       
+        System.out.println("aqui ");
+        LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
+        throw new GeneralSecurityException();
     }
 
   }
 
-  private Cipher getCipher (final int mode,
+    private Cipher getCipher (final int mode,
                             final char[] password,
                             final byte[] encodedParams) throws GeneralSecurityException, IOException {
     

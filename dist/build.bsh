@@ -2,8 +2,6 @@
 
 javac -d . ../src/journal/*.java
 jar -cvf journal.jar ./journal/*.class
-jar -tf journal.jar
 
 javac -d . -cp journal.jar ../src/main/*.java
 jar -cvf main.jar ./main/*
-jar -tf main.jar
