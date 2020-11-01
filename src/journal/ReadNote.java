@@ -27,13 +27,18 @@ public final class ReadNote {
                     "journal.data";
             final File file = new File(journalFile);
             
-            final Scanner is = new Scanner(file);
-                
-            String note = "";
-            for (int notes = 0; notes < n; ++notes) {
-                note = is.nextLine();
+            String note;
+            try (Scanner is = new Scanner(file)) {
+                note = "";
+                for (int notes = 0; notes < n; ++notes) {
+                    note = is.nextLine();
+                }
+            } catch ( final IOException | NoSuchElementException ex ) {
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
+                System.out.println("test1");
+                return "";
             }
-
+            
             String[] parts = note.split(":");
 
             /* Decodificamos los parametros codificados en base64 */

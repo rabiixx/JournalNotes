@@ -40,9 +40,9 @@ public final class AddNote {
             String encodedMsg = Base64.getEncoder().encodeToString( encryptedMsg );
 
             /** 
-              * Obtenemos los paramentros (pizca de sal, iteraciones y vertor de 
-              * inicializacion utilizados por el cipher para poder desencriptar 
-              * el mensaje posteriormente. Al igual que el men
+              * Obtenemos los parámetros (pizca de sal, iteraciones y vector de 
+              * inicialización utilizados por el cipher para poder desencriptar 
+              * el mensaje posteriormente.
               */
             final byte[] params = cipher.getParameters().getEncoded();
 
@@ -56,28 +56,31 @@ public final class AddNote {
 
             final File journalFile = new File(journalPath);
 
-            final FileWriter os = new FileWriter(journalFile, true);
-
-            /** 
-              * Escribimos el mensaje encriptado y los parametros utilizados para
-              * su encriptacion en el fichero journal.data con el siguiente formato:
-              * formato: encodedMsg:encodedParams
-              */
-            os.write(encodedMsg + ":" + base64Params + "\n");
-            return Boolean.TRUE;
-
-
+            /**
+             * Escribimos el mensaje encriptado y los parámetros utilizados para
+             * su encriptacion en el fichero journal.data con el siguiente formato:
+             * formato: encodedMsg:encodedParams
+             */
+            try (FileWriter os = new FileWriter(journalFile, true)) {
+                os.write(encodedMsg + ":" + base64Params + "\n");
+                return Boolean.TRUE;
+            } catch (final IOException ex) {
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
+                return false;
+            }
+            
         } catch ( IOException | GeneralSecurityException ex ) {
             LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
             return Boolean.FALSE;
         }
+        
     }
 
     public Boolean add(final String note) throws TransformerConfigurationException, TransformerException {
 
         return AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> {
             try {
-                return operate(note);
+                return operate( note );
             } catch (AccessControlException | TransformerException ex) {
                 LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
                 return Boolean.FALSE;
