@@ -1,9 +1,5 @@
 package journal;
-/**
- *
- * @author MAZ
- */
-import java.io.Console;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,7 +7,6 @@ import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.GeneralSecurityException;
 import java.security.PrivilegedAction;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,80 +16,71 @@ import javax.xml.transform.TransformerException;
 
 public final class AddNote {
   
-  static private final String CLASS_NAME = AddNote.class.getName();
-  static private final Logger LOGGER = Logger.getLogger(CLASS_NAME);
+    static private final String CLASS_NAME = AddNote.class.getName();
+    static private final Logger LOGGER = Logger.getLogger(CLASS_NAME);
   
-  static private final int ITERATIONS = 2048;
+    static private final int ITERATIONS = 2048;
   
-  private Boolean operate (final String note) throws TransformerConfigurationException, TransformerException {
+    private Boolean operate (final String note) throws TransformerConfigurationException, TransformerException {
 
-    Console console = null;
-    try {
-        console = System.console();
-        if ( console != null ) {
+        try {
+
             System.out.print("Introduce contraseña para encriptar la nota: ");
             final char[] passwd = System.console().readPassword();
-            System.out.println("Password: " + new String(passwd));
-            
-            try {   
-                AESCipherGenerator acg = new AESCipherGenerator();
-                
-                Cipher cipher = acg.getEncrypter(passwd, ITERATIONS);
-                
-                byte[] encryptedMsg = cipher.doFinal( note.getBytes() );
-                //System.out.println("base64 encode " + Arrays.toString(encryptedMsg));
-                String encodedMsg = Base64.getEncoder().encodeToString( encryptedMsg );
-                
-                final byte[] params = cipher.getParameters().getEncoded();
-                final String base64Params = Base64.getEncoder().encodeToString(params);
-                
-                final String journalPath = System.getProperty("user.dir") + File.separator
-                        + "data" + File.separator
-                        + "journal.data";
-                
-                
-                final File journalFile = new File(journalPath);
-                
-                
 
-                try (final FileWriter os = new FileWriter(journalFile, true)) {
+            AESCipherGenerator acg = new AESCipherGenerator();
 
-                    /** 
-                      * format: encodedMsg:encodedParams
-                      * ( ":" is not a valid base64 character, so is used as delimiter )
-                      */
-                    os.write(encodedMsg + ":" + base64Params + "\n");
-                    return Boolean.TRUE;
+            /* Obtenemos el cipher a utilizar para encriptar el mensaje*/
+            Cipher cipher = acg.getEncrypter(passwd, ITERATIONS);
 
-                } catch (final IOException ex) {
-                    LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
-                    return Boolean.FALSE;
-                }
-            
-            } catch (GeneralSecurityException ex) {
+            /* Enctiptamos el mensaje y nos lo devulve encriptado */
+            byte[] encryptedMsg = cipher.doFinal( note.getBytes() );
+
+            /* Codificamos el mensaje encriptado en base64 */
+            String encodedMsg = Base64.getEncoder().encodeToString( encryptedMsg );
+
+            /** 
+              * Obtenemos los paramentros (pizca de sal, iteraciones y vertor de 
+              * inicializacion utilizados por el cipher para poder desencriptar 
+              * el mensaje posteriormente. Al igual que el men
+              */
+            final byte[] params = cipher.getParameters().getEncoded();
+
+            /* Al igual que el mensaje, codificamos los paramentros en base64 */
+            final String base64Params = Base64.getEncoder().encodeToString(params);
+
+
+            final String journalPath = System.getProperty("user.dir") + File.separator
+                + "data" + File.separator
+                + "journal.data";
+
+            final File journalFile = new File(journalPath);
+
+            final FileWriter os = new FileWriter(journalFile, true);
+
+            /** 
+              * Escribimos el mensaje encriptado y los parametros utilizados para
+              * su encriptacion en el fichero journal.data con el siguiente formato:
+              * formato: encodedMsg:encodedParams
+              */
+            os.write(encodedMsg + ":" + base64Params + "\n");
+            return Boolean.TRUE;
+
+
+        } catch ( IOException | GeneralSecurityException ex ) {
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
+            return Boolean.FALSE;
+        }
+    }
+
+    public Boolean add(final String note) throws TransformerConfigurationException, TransformerException {
+
+        return AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> {
+            try {
+                return operate(note);
+            } catch (AccessControlException | TransformerException ex) {
                 LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
                 return Boolean.FALSE;
-            }
-        }
-    } catch (Exception ex) {
-        LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
-        return Boolean.FALSE;
-    }
-    
-    return Boolean.TRUE;
-}
-
-  public Boolean add(final String note) throws TransformerConfigurationException, TransformerException {
-
-        return AccessController.doPrivileged( new PrivilegedAction<Boolean>() {
-            @Override
-            public Boolean run() {
-                try {
-                    return operate(note);
-                } catch (AccessControlException | TransformerException ex) {
-                    LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
-                    return Boolean.FALSE;
-                }
             }
         });
     }

@@ -1,8 +1,5 @@
 package journal;
-/**
- *
- * @author MAZ
- */
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -26,85 +23,85 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-//
+
+
 final class AESCipherGenerator {
   
-  static private final String CLASS_NAME = AESCipherGenerator.class.getName();
-  static private final Logger LOGGER = Logger.getLogger(CLASS_NAME);  
+    static private final String CLASS_NAME = AESCipherGenerator.class.getName();
+    static private final Logger LOGGER = Logger.getLogger(CLASS_NAME);  
 
-  static private final String BLOCK_CIPHER = "AES";
-  static private final String PBE_BLOCK_CIPHER = "PBEWithHmacSHA256AndAES_128";  
-  static private final int KEY_LENGTH  = 16;        /* Bytes - 128bit key */
-  static private final int SALT_LENGTH = 64;
+    static private final String BLOCK_CIPHER = "AES";
+    static private final String PBE_BLOCK_CIPHER = "PBEWithHmacSHA256AndAES_128";  
+    static private final int KEY_LENGTH  = 16;        /* Bytes - 128bit key */
+    static private final int SALT_LENGTH = 64;
+
+    private final String operationMode;
+    private final String paddingScheme;
+    private final String cipherTransform;
+    private final String pbeCipherTransform;
+    private final MessageDigest md;
+    private final SecureRandom rg;
   
-  private final String operationMode;
-  private final String paddingScheme;
-  private final String cipherTransform;
-  private final String pbeCipherTransform;
-  private final MessageDigest md;
-  private final SecureRandom rg;
-  
-  static byte[] toBytes (final char[] chars) {
-    final CharBuffer charBuffer = CharBuffer.wrap(chars);
-    final ByteBuffer byteBuffer = Charset.forName("UTF-8").encode(charBuffer);
-    final byte[] bytes = Arrays.copyOfRange(byteBuffer.array(),
+    static byte[] toBytes (final char[] chars) {
+        final CharBuffer charBuffer = CharBuffer.wrap(chars);
+        final ByteBuffer byteBuffer = Charset.forName("UTF-8").encode(charBuffer);
+        final byte[] bytes = Arrays.copyOfRange(byteBuffer.array(),
             byteBuffer.position(), byteBuffer.limit());
-    return bytes;
-  }  
+        return bytes;
+    }  
 
-  AESCipherGenerator (final String mode, final String padding) throws GeneralSecurityException {
-    try {
-      this.operationMode = mode;
-      this.paddingScheme = padding;
-      this.cipherTransform = BLOCK_CIPHER + "/" + operationMode + "/" + paddingScheme;
-      this.pbeCipherTransform = PBE_BLOCK_CIPHER + "/CBC/PKCS5Padding";
-      this.md = MessageDigest.getInstance("SHA-256");
-      this.rg = new SecureRandom();
-    } catch (final NoSuchAlgorithmException ex) {
-      LOGGER.log(Level.SEVERE, "algoritmo SHA-256 no disponible", ex.getCause());
-      throw new GeneralSecurityException();
+    AESCipherGenerator (final String mode, final String padding) throws GeneralSecurityException {
+        try {
+            this.operationMode = mode;
+            this.paddingScheme = padding;
+            this.cipherTransform = BLOCK_CIPHER + "/" + operationMode + "/" + paddingScheme;
+            this.pbeCipherTransform = PBE_BLOCK_CIPHER + "/CBC/PKCS5Padding";
+            this.md = MessageDigest.getInstance("SHA-256");
+            this.rg = new SecureRandom();
+        } catch (final NoSuchAlgorithmException ex) {
+            LOGGER.log(Level.SEVERE, "algoritmo SHA-256 no disponible", ex.getCause());
+            throw new GeneralSecurityException();
+        }
     }
-    
-  }
   
-  AESCipherGenerator () throws GeneralSecurityException {
-    this("CBC", "PKCS5Padding");
-  }
+    AESCipherGenerator () throws GeneralSecurityException {
+        this("CBC", "PKCS5Padding");
+    }
 
-  Cipher getEncrypter (final char[] passwd, final int iterations) throws GeneralSecurityException {
-    if (iterations > 0)
-      return getCipher(Cipher.ENCRYPT_MODE, passwd, iterations);
-    else
-      throw new IllegalArgumentException("Invalid value for number of iterations");
-  }
+    Cipher getEncrypter (final char[] passwd, final int iterations) throws GeneralSecurityException {
+        if (iterations > 0)
+            return getCipher(Cipher.ENCRYPT_MODE, passwd, iterations);
+        else
+            throw new IllegalArgumentException("Invalid value for number of iterations");
+    }
 
-  Cipher getDecrypter (final char[] passwd, final int iterations) throws GeneralSecurityException {
-    if (iterations > 0)
-      return getCipher(Cipher.DECRYPT_MODE, passwd, iterations);
-    else
-      throw new IllegalArgumentException("Invalid value for number of iterations");
-  }
+    Cipher getDecrypter (final char[] passwd, final int iterations) throws GeneralSecurityException {
+        if (iterations > 0)
+            return getCipher(Cipher.DECRYPT_MODE, passwd, iterations);
+        else
+            throw new IllegalArgumentException("Invalid value for number of iterations");
+    }
   
-  Cipher getEncrypter (final char[] passwd,
-                       final byte[] encodedParams) throws GeneralSecurityException, IOException {
-    return getCipher(Cipher.ENCRYPT_MODE, passwd, encodedParams);
-  }
+    Cipher getEncrypter (final char[] passwd,
+                         final byte[] encodedParams) throws GeneralSecurityException, IOException {
+        return getCipher(Cipher.ENCRYPT_MODE, passwd, encodedParams);
+    }
 
-  Cipher getDecrypter (final char[] passwd,
-                       final byte[] encodedParams) throws GeneralSecurityException, IOException {
-    return getCipher(Cipher.DECRYPT_MODE, passwd, encodedParams);
-  }  
+    Cipher getDecrypter (final char[] passwd,
+                         final byte[] encodedParams) throws GeneralSecurityException, IOException {
+        return getCipher(Cipher.DECRYPT_MODE, passwd, encodedParams);
+    }  
   
-  Cipher getEncrypter (final byte[] bytes) throws GeneralSecurityException {
-    return getCipher(Cipher.ENCRYPT_MODE, bytes);
-  }
+    Cipher getEncrypter (final byte[] bytes) throws GeneralSecurityException {
+        return getCipher(Cipher.ENCRYPT_MODE, bytes);
+    }
 
-  Cipher getDecrypter (final byte[] bytes) throws GeneralSecurityException {
-    return getCipher(Cipher.DECRYPT_MODE, bytes);
-  }
+    Cipher getDecrypter (final byte[] bytes) throws GeneralSecurityException {
+        return getCipher(Cipher.DECRYPT_MODE, bytes);
+    }
 
-  private Cipher getCipher (final int mode,
-                            final byte[] rawMaterial) throws GeneralSecurityException {
+    private Cipher getCipher (final int mode,
+                              final byte[] rawMaterial) throws GeneralSecurityException {
     
     try {
 
@@ -166,9 +163,9 @@ final class AESCipherGenerator {
     
   }
   
-  private Cipher getCipher (final int mode,
-                            final char[] password,
-                            final int iterations) throws GeneralSecurityException {
+    private Cipher getCipher (final int mode,
+                              final char[] password,
+                              final int iterations) throws GeneralSecurityException {
     try {
       
         // Generación de clave secreta a partir de contraseña
@@ -215,41 +212,39 @@ final class AESCipherGenerator {
                             final char[] password,
                             final byte[] encodedParams) throws GeneralSecurityException, IOException {
     
-    try {
-      
-      // Reconstrucción de parámetros del cifrador PBE
-      final AlgorithmParameters algParams = AlgorithmParameters.getInstance(PBE_BLOCK_CIPHER);
-      algParams.init(encodedParams);
-      
-      final PBEParameterSpec params = algParams.getParameterSpec(PBEParameterSpec.class);
-      
-      // Generación de clave secreta a partir de contraseña
-      final PBEKeySpec keySpec = new PBEKeySpec(password);
-      final SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(PBE_BLOCK_CIPHER);
-      final SecretKey key = keyFactory.generateSecret(keySpec);
-      keySpec.clearPassword(); // Se borra el duplicado interno de la contraseña
-      
-      // Borrado de datos sensibles
-      Arrays.fill(password, (char) 0);      
-      
-      // Instanciación del cifrador PBE
-      final Cipher cipher = Cipher.getInstance(pbeCipherTransform);
-      
-      // Configuración del cifrador PBE
-      cipher.init(mode, key, params);
+        try {
 
-      return cipher;
+            // Reconstrucción de parámetros del cifrador PBE
+            final AlgorithmParameters algParams = AlgorithmParameters.getInstance(PBE_BLOCK_CIPHER);
+            algParams.init(encodedParams);
 
-    } catch (final NoSuchAlgorithmException |
-                   NoSuchPaddingException |
-                   InvalidAlgorithmParameterException ex) {
-      LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
-      throw new GeneralSecurityException();
-    } catch (final IOException ex) {
-      LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
-      throw new IOException();
-    }
-    
-  }  
+            final PBEParameterSpec params = algParams.getParameterSpec(PBEParameterSpec.class);
 
+            // Generación de clave secreta a partir de contraseña
+            final PBEKeySpec keySpec = new PBEKeySpec(password);
+            final SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(PBE_BLOCK_CIPHER);
+            final SecretKey key = keyFactory.generateSecret(keySpec);
+            keySpec.clearPassword(); // Se borra el duplicado interno de la contraseña
+
+            // Borrado de datos sensibles
+            Arrays.fill(password, (char) 0);      
+
+            // Instanciación del cifrador PBE
+            final Cipher cipher = Cipher.getInstance(pbeCipherTransform);
+
+            // Configuración del cifrador PBE
+            cipher.init(mode, key, params);
+
+            return cipher;
+
+        } catch (final NoSuchAlgorithmException |
+                       NoSuchPaddingException |
+                       InvalidAlgorithmParameterException ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
+            throw new GeneralSecurityException();
+        } catch (final IOException ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex.getCause());
+            throw new IOException();
+        }    
+    }  
 }

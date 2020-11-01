@@ -1,8 +1,5 @@
 package main;
-/**
- *
- * @author MAZ
- */
+
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import javax.xml.transform.TransformerException;
